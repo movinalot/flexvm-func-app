@@ -252,7 +252,7 @@ def vms_reactivate(access_token, vm_serial_number):
     headers = {
         "Content-type": "application/json",
         "Accept": "application/json",
-        "Authorization": f"Bearer {access_token}"
+        "Authorization": f"Bearer {access_token}",
     }
     body = {"serialNumber": vm_serial_number}
 
@@ -301,7 +301,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     api_request_result = None
 
-    if flexvm_op == "authenticate":
+    if flexvm_op == "get_token":
         api_request_result = get_token(
             req_body.get("username"),
             req_body.get("password"),
@@ -345,15 +345,71 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             req_body.get("svc_package"),
         )
 
+    if flexvm_op == "vms_create":
+        api_request_result = vms_create(
+            req_body.get("access_token"),
+            req_body.get("config_id"),
+            req_body.get("count"),
+            req_body.get("description"),
+            req_body.get("end_date"),
+        )
+
+    if flexvm_op == "vms_list":
+        api_request_result = vms_list(
+            req_body.get("access_token"), req_body.get("config_id")
+        )
+
+    if flexvm_op == "vms_points_by_config_id":
+        api_request_result = vms_points_by_config_id(
+            req_body.get("access_token"),
+            req_body.get("config_id"),
+            req_body.get("start_date"),
+            req_body.get("end_date"),
+        )
+
+    if flexvm_op == "vms_points_by_serial_number":
+        api_request_result = vms_points_by_serial_number(
+            req_body.get("access_token"),
+            req_body.get("vm_serial_number"),
+            req_body.get("start_date"),
+            req_body.get("end_date"),
+        )
+
+    if flexvm_op == "vms_update":
+        api_request_result = vms_update(
+            req_body.get("access_token"),
+            req_body.get("vm_serial_number"),
+            req_body.get("config_id"),
+            req_body.get("description"),
+            req_body.get("end_date"),
+        )
+
+    if flexvm_op == "vms_reactivate":
+        api_request_result = vms_reactivate(
+            req_body.get("access_token"), req_body.get("vm_serial_number")
+        )
+
+    if flexvm_op == "vms_stop":
+        api_request_result = vms_stop(
+            req_body.get("access_token"), req_body.get("vm_serial_number")
+        )
+
+    if flexvm_op == "vms_token":
+        api_request_result = vms_token(
+            req_body.get("access_token"), req_body.get("vm_serial_number")
+        )
+
     if api_request_result:
         logging.info(api_request_result)
-
-        return func.HttpResponse(
-            api_request_result,
-            status_code=200,
-            headers={"Content-type": "application/json"},
-        )
+        status_code = 200
     else:
-        return func.HttpResponse(
-            "FlexVM Op name is missing or unknown.", status_code=400
+        api_request_result = (
+            "{'error': 'FlexVM Op name is missing/unknown or unexpected error occurred'}"
         )
+        status_code = 400
+
+    return func.HttpResponse(
+        api_request_result,
+        status_code=status_code,
+        headers={"Content-type": "application/json"},
+    )
