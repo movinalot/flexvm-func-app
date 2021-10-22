@@ -204,7 +204,7 @@ def vms_update(access_token, vm_serial_number, config_id, description, end_date)
     # Only Active Virtual Machines can be updated
     process_update = False
     vm_status = "Not Found"
-    vm_list = vms_list(access_token, config_id)
+    vm_list = json.loads(vms_list(access_token, config_id))
     if vm_list:
         logging.info("VM List:")
         logging.info(vm_list)
