@@ -1,0 +1,447 @@
+{
+	"info": {
+		"_postman_id": "8c6e183f-ab0f-4970-9e75-7b29c653ae40",
+		"name": "FlexVM Azure Function App",
+		"description": "FlexVM Azure Function App calls",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Configurations",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"configs_create\",\n    \"access_token\": \"{{access_token}}\",\n    \"programSerialNumber\": \"ELAVMRXXXXXXXXXX\",\n    \"name\": \"VM04 FC\",\n    \"cpu\": \"4\",\n    \"svc_package\": \"FC\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "disable",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"configs_disable\",\n    \"access_token\": \"{{access_token}}\",\n    \"config_id\": \"000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "enable",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"configs_enable\",\n    \"access_token\": \"{{access_token}}\",\n    \"config_id\": \"000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"configs_list\",\n    \"access_token\": \"{{access_token}}\",\n    \"programSerialNumber\": \"ELAVMRXXXXXXXXXX\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"configs_update\",\n    \"access_token\": \"{{access_token}}\",\n    \"config_id\": \"000\",\n    \"name\": \"VM04 FortiCare\",\n    \"cpu\": \"4\",\n    \"svc_package\": \"FC\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Programs",
+			"item": [
+				{
+					"name": "list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const programs = [];",
+									"var respJsonData = JSON.parse(responseBody);",
+									"",
+									"if (respJsonData.status == 0) {",
+									"    for (var program in respJsonData.programs) {",
+									"        programs.push(respJsonData.programs[program].serialNumber);",
+									"        console.log(respJsonData.programs[program].serialNumber);",
+									"    }",
+									"  pm.environment.set(\"programs_list\", programs)",
+									"  console.log(programs)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"programs_list\",\n    \"access_token\": \"{{access_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authenticate",
+			"item": [
+				{
+					"name": "Retrieve Auth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var respJsonData = JSON.parse(responseBody)",
+									"",
+									"if (respJsonData.status == \"success\") {",
+									"  pm.environment.set(\"access_token\", respJsonData.access_token)",
+									"  pm.environment.set(\"refresh_token\", respJsonData.refresh_token)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"get_token\",\n    \"username\": \"{{api-username}}\",\n    \"password\": \"{{api-password}}\",\n    \"client_id\": \"{{client_id}}\",\n    \"grant_type\": \"{{grant_type}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Virtual Machines",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"vms_create\",\n    \"access_token\": \"{{access_token}}\",\n    \"config_id\": \"000\",\n    \"count\": \"2\",\n    \"description\": \"VM04\",\n    \"endDate\": \"YYYY-MM-DD\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"vms_list\",\n    \"access_token\": \"{{access_token}}\",\n    \"config_id\": \"000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reactivate",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"vms_reactivate\",\n    \"access_token\": \"{{access_token}}\",\n    \"vm_serial_number\": \"FGVXXXXXXXXXXXXX\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "points by config id",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"vms_points_by_config_id\",\n    \"access_token\": \"{{access_token}}\",\n    \"config_id\": \"000\",\n    \"start_date\": \"YYYY-MM-DD\",\n    \"end_date\": \"YYYY-MM-DD\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "points by serial number",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"vms_points_by_serial_number\",\n    \"access_token\": \"{{access_token}}\",\n    \"vm_serial_number\": \"FGVXXXXXXXXXXXXX\",\n    \"start_date\": \"YYYY-MM-DD\",\n    \"end_date\": \"YYYY-MM-DD\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "stop",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"vms_stop\",\n    \"access_token\": \"{{access_token}}\",\n    \"vm_serial_number\": \"FGVXXXXXXXXXXXXX\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"vms_token\",\n    \"access_token\": \"{{access_token}}\",\n    \"vm_serial_number\": \"FGVXXXXXXXXXXXXX\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flexvm_op\": \"vms_update\",\n    \"access_token\": \"{{access_token}}\",\n    \"vm_serial_number\": \"FGVXXXXXXXXXXXXX\",\n    \"config_id\": \"000\",\n    \"description\": \"VM04\",\n    \"end_date\": \"YYYY-MM-DD\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{flexvm-ops-endpoint}}",
+							"protocol": "https",
+							"host": [
+								"{{flexvm-ops-endpoint}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
