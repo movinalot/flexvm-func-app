@@ -7,6 +7,7 @@ FLEXVM_API_BASE_URI = "https://support.fortinet.com/ES/api/flexvm/v1/"
 COMMON_HEADERS = {"Content-type": "application/json", "Accept": "application/json"}
 logging.getLogger().setLevel(logging.INFO)
 
+
 def requests_post(resource_url, json_body, headers):
     """Requests Post"""
     logging.info("--> FlexVM API Request...")
@@ -49,7 +50,7 @@ def programs_list(access_token):
     return results
 
 
-def configs_create(access_token, program_serial_number, name, cpus, svc_package):
+def configs_create(access_token, program_serial_number, name, product_type_id, cpus, svc_package):
     """Create FlexVM Configuration"""
     logging.info("--> Create FlexVM Configuration...")
 
@@ -60,7 +61,7 @@ def configs_create(access_token, program_serial_number, name, cpus, svc_package)
     body = {
         "programSerialNumber": program_serial_number,
         "name": name,
-        "productTypeId": 1,
+        "productTypeId": product_type_id,
         "parameters": [{"id": 1, "value": cpus}, {"id": 2, "value": svc_package}],
     }
 
@@ -123,6 +124,32 @@ def configs_update(access_token, config_id, name, cpu, svc_package):
         "name": name,
         "parameters": [{"id": 1, "value": cpu}, {"id": 2, "value": svc_package}],
     }
+
+    results = requests_post(uri, body, headers)
+    return results
+
+
+def groups_list(access_token):
+    """List FlexVM Groups"""
+    logging.info("--> List FlexVM Groups...")
+
+    uri = FLEXVM_API_BASE_URI + "groups/list"
+    headers = COMMON_HEADERS.copy()
+    headers["Authorization"] = f"Bearer {access_token}"
+
+    results = requests_post(uri, "", headers)
+    return results
+
+
+def groups_nexttoken(access_token, folder_path):
+    """Get FlexVM Group Next Token"""
+    logging.info("--> Get FlexVM Group Next Token...")
+
+    uri = FLEXVM_API_BASE_URI + "groups/nexttoken"
+    headers = COMMON_HEADERS.copy()
+    headers["Authorization"] = f"Bearer {access_token}"
+
+    body = {"folderPath": folder_path}
 
     results = requests_post(uri, body, headers)
     return results
@@ -287,8 +314,9 @@ def vms_token(access_token, vm_serial_number):
 def lambda_handler(event, context):
     """Process FlexVM API Request"""
 
+    logging.info("Received event: %s", json.dumps(event, indent=2))
+
     logging.info("FlexVM OPs processing api request...")
-    #logging.info("Received event: " + json.dumps(event, indent=2))
 
     process_request = False
     api_request_result = None
@@ -297,7 +325,7 @@ def lambda_handler(event, context):
     if event["httpMethod"] == "POST":
         if event["body"]:
             req_body = json.loads(event["body"])
-            logging.info("body: " + json.dumps(req_body, indent=2))
+            logging.info("body: %s", json.dumps(req_body, indent=2))
 
             if "flexvm_op" in req_body:
                 flexvm_op = req_body["flexvm_op"]
@@ -308,8 +336,7 @@ def lambda_handler(event, context):
             api_request_result = "{'error': 'FlexVM POST has no Body'}"
     else:
         api_request_result = (
-            "{'error': 'FlexVM Unsupported method - " +
-            event['httpMethod'] + "'}"
+            "{'error': 'FlexVM Unsupported method - " + event["httpMethod"] + "'}"
         )
 
     if process_request:
@@ -330,6 +357,7 @@ def lambda_handler(event, context):
                 req_body["access_token"],
                 req_body["programSerialNumber"],
                 req_body["name"],
+                req_body["productTypeId"],
                 req_body["cpu"],
                 req_body["svc_package"],
             )
@@ -356,6 +384,14 @@ def lambda_handler(event, context):
                 req_body["name"],
                 req_body["cpu"],
                 req_body["svc_package"],
+            )
+
+        if flexvm_op == "groups_list":
+            api_request_result = groups_list(req_body["access_token"])
+
+        if flexvm_op == "groups_nexttoken":
+            api_request_result = groups_nexttoken(
+                req_body["access_token"], req_body["folder_path"]
             )
 
         if flexvm_op == "vms_create":
@@ -424,7 +460,7 @@ def lambda_handler(event, context):
         status_code = 400
 
     return {
-        'statusCode': status_code,
-        'headers': {"Content-type": "application/json"},
-        'body': result
+        "statusCode": status_code,
+        "headers": {"Content-type": "application/json"},
+        "body": result,
     }

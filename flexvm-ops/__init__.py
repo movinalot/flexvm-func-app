@@ -53,7 +53,7 @@ def programs_list(access_token):
     return results
 
 
-def configs_create(access_token, program_serial_number, name, cpus, svc_package):
+def configs_create(access_token, program_serial_number, name, product_type_id, cpus, svc_package):
     """Create FlexVM Configuration"""
     logging.info("--> Create FlexVM Configuration...")
 
@@ -64,7 +64,7 @@ def configs_create(access_token, program_serial_number, name, cpus, svc_package)
     body = {
         "programSerialNumber": program_serial_number,
         "name": name,
-        "productTypeId": 1,
+        "productTypeId": product_type_id,
         "parameters": [{"id": 1, "value": cpus}, {"id": 2, "value": svc_package}],
     }
 
@@ -127,6 +127,32 @@ def configs_update(access_token, config_id, name, cpu, svc_package):
         "name": name,
         "parameters": [{"id": 1, "value": cpu}, {"id": 2, "value": svc_package}],
     }
+
+    results = requests_post(uri, body, headers)
+    return results
+
+
+def groups_list(access_token):
+    """List FlexVM Groups"""
+    logging.info("--> List FlexVM Groups...")
+
+    uri = FLEXVM_API_BASE_URI + "groups/list"
+    headers = COMMON_HEADERS.copy()
+    headers["Authorization"] = f"Bearer {access_token}"
+
+    results = requests_post(uri, "", headers)
+    return results
+
+
+def groups_nexttoken(access_token, folder_path):
+    """Get FlexVM Group Next Token"""
+    logging.info("--> Get FlexVM Group Next Token...")
+
+    uri = FLEXVM_API_BASE_URI + "groups/nexttoken"
+    headers = COMMON_HEADERS.copy()
+    headers["Authorization"] = f"Bearer {access_token}"
+
+    body = {"folderPath": folder_path}
 
     results = requests_post(uri, body, headers)
     return results
@@ -317,6 +343,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             req_body.get("access_token"),
             req_body.get("programSerialNumber"),
             req_body.get("name"),
+            req_body.get("productTypeId"),
             req_body.get("cpu"),
             req_body.get("svc_package"),
         )
@@ -343,6 +370,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             req_body.get("name"),
             req_body.get("cpu"),
             req_body.get("svc_package"),
+        )
+
+    if flexvm_op == "groups_list":
+        api_request_result = groups_list(req_body.get("access_token"))
+
+    if flexvm_op == "groups_nexttoken":
+        api_request_result = groups_nexttoken(
+            req_body.get("access_token"), req_body.get("folder_path")
         )
 
     if flexvm_op == "vms_create":
